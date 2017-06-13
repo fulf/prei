@@ -1,9 +1,9 @@
 #include <PREi.h>
 
-Resp *r;
+PREi *r;
 
 void setup() {
-  r = new Resp();
+  r = new PREi();
 }
 
 void loop() {
