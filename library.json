@@ -1,0 +1,27 @@
+{
+  "name":"PREi",
+  "description":"Pseudo-REST ESP Interface. Offers an easy to setup REST server to control your ESP. Includes a DNS capturing WiFi AP configuration portal.",
+  "keywords":"prei,esp,rest,wifi",
+  "authors":
+  {
+    "name": "Sorin Guga",
+    "email": "arduino@soringuga.com",
+    "url": "http://www.soringuga.com",
+    "maintainer": true
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/fulf/prei.git"
+  },
+  "dependencies":
+  {
+    "name": "PREi NTP Manager",
+    "authors": "Sorin Guga",
+    "frameworks": "arduino"
+  },
+  "version": "1.0.0",
+  "license": "MIT",
+  "frameworks": "arduino",
+  "platforms":"espressif"
+}
