@@ -18,17 +18,19 @@ class PREi
     ESP8266WebServer _web_server;
     DNSServer _dns_server;
     String _esp_hostname,
-      _ap_hostname,
       _ap_password,
       _version;
     unsigned long _boot_timestamp;
     String generateLinksJSON(String path),
       generateInfoJSON(),
       generateScanJSON();
-    void sendJSON(int code, String message);
+    void init(),
+      sendJSON(int code, String message);
 
   public:
     PREi();
+    PREi(String hostname);
+    PREi(String hostname, String password);
     void run();
 };
 

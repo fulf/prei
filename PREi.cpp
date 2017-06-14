@@ -1,73 +1,20 @@
 #include "PREi.h"
 
+PREi::PREi(String hostname, String password) {
+  _esp_hostname = hostname;
+  _ap_password = password;
+  PREi::init();
+}
+
+PREi::PREi(String hostname) {
+  _esp_hostname = hostname;
+  PREi::init();
+}
+
 PREi::PREi() {
-  Serial.begin(115200);
   _esp_hostname = "ESP_" + String(ESP.getChipId());
 
-  WiFi.setAutoConnect(false);
-
-  WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP(_esp_hostname.c_str(), "zxyqweiop");
-
-  _dns_server.setErrorReplyCode(DNSReplyCode::NoError);
-  _dns_server.start(53, "*", WiFi.softAPIP());
-
-  MDNS.begin(_esp_hostname.c_str());
-
-  _web_server.on("/info", [&](){
-    _web_server.send(200, "application/json", generateInfoJSON());
-  });
-
-  _web_server.on("/scan", [&](){
-    _web_server.send(200, "application/json", generateScanJSON());
-  });
-
-  _web_server.on("/connect", [&](){
-    const int MAX_TRIES = 30;
-    int status;
-
-    String ssid = _web_server.arg("ssid");
-    String pass = _web_server.arg("pass");
-    int respCode = 200;
-    String respMessage;
-
-    if(ssid.length() > 31 || ssid.length() == 0) {
-      respCode = 400;
-      respMessage = "Invalid SSID provided.";
-    } else if(pass.length() < 8 || pass.length() > 63) {
-      respCode = 400;
-      respMessage = "Invalid password provided.";
-    }
-
-    if(respCode == 200) {
-      WiFi.begin(ssid.c_str(), pass.c_str());
-
-      for(int t=0; t<MAX_TRIES && (status = WiFi.status()) != WL_CONNECTED; ++t) {
-        delay(150);
-      }
-
-      if(status != WL_CONNECTED) {
-        respCode = 403;
-        respMessage = "Invalid credentials provided.";
-      } else {
-        respCode = 200;
-        respMessage = "Connected succesfully to provided WiFi.";
-      }
-    }
-
-    PREi::sendJSON(respCode, respMessage);
-
-    if(respCode/100 != 2) {
-      WiFi.disconnect();
-    }
-  });
-
-  _web_server.on("/disconnect", [&](){
-    PREi::sendJSON(200, "Disconnected succesfully!");
-    WiFi.disconnect();
-  });
-
-  _web_server.begin();
+  PREi::init();
 }
 
 void PREi::run() {
@@ -200,4 +147,77 @@ String PREi::generateLinksJSON(String path) {
     JSON += "\"disconnect\":\"http://"+hostname+"/disconnect\"";
   };
   return JSON + "}";
+}
+
+void PREi::init() {
+  Serial.begin(115200);
+
+  WiFi.setAutoConnect(false);
+
+  WiFi.mode(WIFI_AP_STA);
+  if(_ap_password.length() > 7 && _ap_password.length() < 64) {
+    WiFi.softAP(_esp_hostname.c_str(), _ap_password.c_str());
+  } else {
+    WiFi.softAP(_esp_hostname.c_str());
+  }
+
+  _dns_server.setErrorReplyCode(DNSReplyCode::NoError);
+  _dns_server.start(53, "*", WiFi.softAPIP());
+
+  MDNS.begin(_esp_hostname.c_str());
+
+  _web_server.on("/info", [&](){
+    _web_server.send(200, "application/json", generateInfoJSON());
+  });
+
+  _web_server.on("/scan", [&](){
+    _web_server.send(200, "application/json", generateScanJSON());
+  });
+
+  _web_server.on("/connect", [&](){
+    const int MAX_TRIES = 30;
+    int status;
+
+    String ssid = _web_server.arg("ssid");
+    String pass = _web_server.arg("pass");
+    int respCode = 200;
+    String respMessage;
+
+    if(ssid.length() > 31 || ssid.length() == 0) {
+      respCode = 400;
+      respMessage = "Invalid SSID provided.";
+    } else if(pass.length() < 8 || pass.length() > 63) {
+      respCode = 400;
+      respMessage = "Invalid password provided.";
+    }
+
+    if(respCode == 200) {
+      WiFi.begin(ssid.c_str(), pass.c_str());
+
+      for(int t=0; t<MAX_TRIES && (status = WiFi.status()) != WL_CONNECTED; ++t) {
+        delay(150);
+      }
+
+      if(status != WL_CONNECTED) {
+        respCode = 403;
+        respMessage = "Invalid credentials provided.";
+      } else {
+        respCode = 200;
+        respMessage = "Connected succesfully to provided WiFi.";
+      }
+    }
+
+    PREi::sendJSON(respCode, respMessage);
+
+    if(respCode/100 != 2) {
+      WiFi.disconnect();
+    }
+  });
+
+  _web_server.on("/disconnect", [&](){
+    PREi::sendJSON(200, "Disconnected succesfully!");
+    WiFi.disconnect();
+  });
+
+  _web_server.begin();
 }
