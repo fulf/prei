@@ -186,7 +186,7 @@ void PREi::init() {
     if(ssid.length() > 31 || ssid.length() == 0) {
       respCode = 400;
       respMessage = "Invalid SSID provided.";
-    } else if(pass.length() < 8 || pass.length() > 63) {
+    } else if((pass.length() > 0 && pass.length() < 8) || pass.length() > 63) {
       respCode = 400;
       respMessage = "Invalid password provided.";
     }
