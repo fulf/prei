@@ -26,6 +26,10 @@ class PREi
       generateScanJSON();
     void init(),
       sendJSON(int code, String message, bool raw),
+      // Route /wifi GET/POST/DELETE
+      handleScan(),
+      handleConnect(),
+      handleDisconnect();
 
   public:
     PREi();
