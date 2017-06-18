@@ -151,8 +151,7 @@ String PREi::generateLinksJSON(String path) {
 
 void PREi::init() {
   Serial.begin(115200);
-
-  WiFi.setAutoConnect(false);
+  WiFi.setAutoConnect(true);
 
   WiFi.mode(WIFI_AP_STA);
   if(_ap_password.length() > 7 && _ap_password.length() < 64) {
