@@ -185,12 +185,9 @@ void PREi::handleScan() {
 void PREi::handleConnect() {
   const int MAX_TRIES = 30;
   int status;
-  Serial.println("Handling connect...");
   String ssid = _web_server.arg("ssid");
   String pass = _web_server.arg("pass");
 
-  Serial.println(ssid);
-  Serial.println(pass);
   int respCode = 200;
   String respMessage;
 
