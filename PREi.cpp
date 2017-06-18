@@ -23,9 +23,9 @@ void PREi::run() {
   yield();
 }
 
-void PREi::sendJSON(int code, String message) {
+void PREi::sendJSON(int code, String message, bool raw=false) {
   String success = (code/100) == 2 ? "true" : "false";
-  _web_server.send(code, "application/json", "{\"success\":" + success+ ",\"message\":\"" + message+ "\"}");
+  _web_server.send(code, "application/json", raw ? message : "{\"success\":" + success+ ",\"message\":\"" + message+ "\"}");
 }
 
 String PREi::generateInfoJSON() {

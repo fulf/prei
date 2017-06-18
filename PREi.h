@@ -25,7 +25,7 @@ class PREi
       generateInfoJSON(),
       generateScanJSON();
     void init(),
-      sendJSON(int code, String message);
+      sendJSON(int code, String message, bool raw),
 
   public:
     PREi();
