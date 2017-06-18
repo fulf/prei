@@ -41,24 +41,24 @@ String PREi::generateInfoJSON() {
   JSON += ",\"data\":";
   JSON += "{\
     \"attributes\":{\
-      \"chip_id\":\"{ci}\",\
-      \"flash_chip_id\":\"{fci}\",\
+      \"chip_id\":{ci},\
+      \"flash_chip_id\":{fci},\
       \"hostname\":\"{hn}\",\
       \"mdns\":\"{mdns}\",\
       \"ap_ssid\":\"{asi}\",\
       \"ap_ip\":\"{aip}\",\
-      \"sta_ssid\":\"{ssi}\",\
-      \"sta_ip\":\"{sip}\",\
-      \"flash_chip_size\":\"{fcs}\",\
-      \"flash_chip_real_size\":\"{fcrs}\",\
+      \"sta_ssid\":{ssi},\
+      \"sta_ip\":{sip},\
+      \"flash_chip_size\":{fcs},\
+      \"flash_chip_real_size\":{fcrs},\
       \"boot_version\":\"{bv}\",\
       \"core_version\":\"{cv}\",\
       \"sdk_version\":\"{sv}\",\
       \"firmware_version\":\"{fv}\",\
-      \"firmware_size\":\"{ss}\",\
+      \"firmware_size\":{ss},\
       \"firmware_md5\":\"{smd5}\",\
-      \"boot_timestamp\":\"{ut}\",\
-      \"unix\":\"{ux}\"\
+      \"boot_timestamp\":{ut},\
+      \"unix\":{ux}\
     }\
   }";
 
@@ -68,8 +68,8 @@ String PREi::generateInfoJSON() {
   JSON.replace("{mdns}", "http://" + String(_esp_hostname) + ".local/");
   JSON.replace("{asi}", _esp_hostname);
   JSON.replace("{aip}", WiFi.softAPIP().toString());
-  JSON.replace("{ssi}", WiFi.SSID());
-  JSON.replace("{sip}", WiFi.localIP().toString());
+  JSON.replace("{ssi}", WiFi.status() == WL_CONNECTED ? '"' + WiFi.SSID() + '"' : "null");
+  JSON.replace("{sip}", WiFi.status() == WL_CONNECTED ? '"' + WiFi.localIP().toString() + '"' : "null");
   JSON.replace("{fcs}", String(ESP.getFlashChipSize()));
   JSON.replace("{fcrs}", String(ESP.getFlashChipRealSize()));
   JSON.replace("{bv}", String(ESP.getBootVersion()));
@@ -78,8 +78,8 @@ String PREi::generateInfoJSON() {
   JSON.replace("{fv}", VERSION);
   JSON.replace("{ss}", String(ESP.getSketchSize()));
   JSON.replace("{smd5}", ESP.getSketchMD5());
-  JSON.replace("{ut}", String(_boot_timestamp));
-  JSON.replace("{ux}", String(_prei_ntp.getUnix()));
+  JSON.replace("{ut}", _boot_timestamp != 0 ? String(_boot_timestamp) : "null");
+  JSON.replace("{ux}", unix != 0 ? String(unix) : "null");
 
   return JSON + "}";
 }
@@ -92,10 +92,10 @@ String PREi::generateScanJSON() {
   int n = WiFi.scanNetworks();
   for(int i=0; i<n; ++i) {
     String temp = "{\
-      \"id\":\"{i}\",\
+      \"id\":{i},\
       \"attributes\":{\
         \"ssid\":\"{s}\",\
-        \"rssi\":\"{r}\",\
+        \"rssi\":{r},\
         \"encryption\":\"{e}\"\
       }\
     }";
