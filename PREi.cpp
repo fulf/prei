@@ -36,9 +36,7 @@ String PREi::generateInfoJSON() {
   }
 
   String JSON = "";
-  JSON += "{\"links\":";
-  JSON += PREi::generateLinksJSON("/info");
-  JSON += ",\"data\":";
+  JSON += "{\"data\":";
   JSON += "{\
     \"attributes\":{\
       \"chip_id\":{ci},\
@@ -86,9 +84,7 @@ String PREi::generateInfoJSON() {
 
 String PREi::generateScanJSON() {
   String JSON = "";
-  JSON += "{\"links\":";
-  JSON += PREi::generateLinksJSON("/scan");
-  JSON += ",\"data\":[";
+  JSON += "{\"data\":[";
   int n = WiFi.scanNetworks();
   for(int i=0; i<n; ++i) {
     String temp = "{\
@@ -130,23 +126,6 @@ String PREi::generateScanJSON() {
   }
 
   return JSON + "]}";
-}
-
-String PREi::generateLinksJSON(String path) {
-  String hostname = _web_server.hostHeader();
-  String JSON = "{";
-  if(path == "/info") {
-    JSON += "\"self\":\"http://"+hostname+"/info\",";
-    JSON += "\"scan\":\"http://"+hostname+"/scan\",";
-    JSON += "\"connect\":\"http://"+hostname+"/connect\",";
-    JSON += "\"disconnect\":\"http://"+hostname+"/disconnect\"";
-  } else if(path == "/scan") {
-    JSON += "\"self\":\"http://"+hostname+"/scan\",";
-    JSON += "\"info\":\"http://"+hostname+"/info\",";
-    JSON += "\"connect\":\"http://"+hostname+"/connect\",";
-    JSON += "\"disconnect\":\"http://"+hostname+"/disconnect\"";
-  };
-  return JSON + "}";
 }
 
 void PREi::init() {
