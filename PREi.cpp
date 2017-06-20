@@ -40,6 +40,8 @@ void PREi::init() {
 
   MDNS.begin(_esp_hostname.c_str());
 
+  _web_server.on("/", HTTP_GET, std::bind(&PREi::handlePortal, this));
+
   _web_server.on("/esp", HTTP_GET, std::bind(&PREi::handleInfo, this));
   _web_server.on("/esp", HTTP_POST, std::bind(&PREi::handleUpdate, this));
   _web_server.on("/esp", HTTP_DELETE, std::bind(&PREi::handleRestart, this));
@@ -48,12 +50,28 @@ void PREi::init() {
   _web_server.on("/wifi", HTTP_POST, std::bind(&PREi::handleConnect, this));
   _web_server.on("/wifi", HTTP_DELETE, std::bind(&PREi::handleDisconnect, this));
 
+  _web_server.onNotFound(std::bind(&PREi::handleNotFound, this));
+
   _web_server.begin();
 }
 
 void PREi::sendJSON(int code, String message, bool raw=false) {
   String success = (code/100) == 2 ? "true" : "false";
   _web_server.send(code, "application/json", raw ? message : "{\"success\":" + success+ ",\"message\":\"" + message+ "\"}");
+}
+
+void PREi::handlePortal() {
+  if(PREi::redirectToHost(true)) {
+      return;
+  }
+
+  SPIFFS.begin();
+  File f = SPIFFS.open("/index.html", "r");
+  if(!f) {
+    PREi::sendJSON(404, "Could not find portal page.");
+  }
+  _web_server.streamFile(f, "text/html");
+  SPIFFS.end();
 }
 
 void PREi::handleInfo() {
@@ -128,6 +146,46 @@ void PREi::handleConnect() {
 void PREi::handleDisconnect() {
   PREi::sendJSON(200, "Disconnected succesfully!");
   WiFi.disconnect();
+}
+
+void PREi::handleNotFound() {
+  if(PREi::redirectToHost(false)) {
+    return;
+  }
+
+  String uri = _web_server.uri();
+  String contentType = "text/plain";
+  SPIFFS.begin();
+
+  File f = SPIFFS.open(uri, "r");
+  if(!f) {
+    PREi::sendJSON(404, "Resource not found.");
+    return;
+  }
+
+  if(uri.substring(uri.length() - 5) == ".html") {
+    contentType = "text/html";
+  } else if(uri.substring(uri.length() - 4) == ".css") {
+    contentType = "text/css";
+  } else if(uri.substring(uri.length() - 3) == ".js") {
+    contentType = "text/javascript";
+  }
+
+  _web_server.streamFile(f, contentType);
+  SPIFFS.end();
+}
+
+bool PREi::redirectToHost(bool permanent) {
+  String localIP = _web_server.client().localIP().toString();
+
+  if (_web_server.hostHeader() != localIP) {
+    _web_server.sendHeader("Location", String("http://") + localIP, true);
+    _web_server.send(permanent ? 308 : 302, "text/plain", "");
+    _web_server.client().stop();
+    return true;
+  }
+
+  return false;
 }
 
 String PREi::generateInfoJSON() {
