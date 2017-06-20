@@ -12,6 +12,14 @@
 
 #define VERSION "1.0.0"
 
+struct PREiPin {
+    String name;
+    uint8_t pin;
+    bool digital;
+    String mode;
+    uint8_t pwm_val;
+};
+
 class PREi
 {
   private:
@@ -21,12 +29,16 @@ class PREi
     String _esp_hostname,
       _ap_password,
       _version;
+    PREiPin pins[10];
     unsigned long _boot_timestamp;
+    uint8_t getPinFromUri(String uri);
     String generateLinksJSON(String path),
       generateInfoJSON(),
-      generateScanJSON();
+      generateScanJSON(),
+      generatePinJSON(PREiPin pin);
     bool redirectToHost(bool permanent);
     void init(),
+      initPins(),
       sendJSON(int code, String message, bool raw),
       // PREi config portal
       handlePortal(),
@@ -38,6 +50,12 @@ class PREi
       handleScan(),
       handleConnect(),
       handleDisconnect(),
+      // Route /pin/{id} GET/POST/PUT/DELETE
+      handlePinInfo(),
+      handlePinOn(),
+      handlePinChange(),
+      handlePinOff(),
+      // Other routes handler
       handleNotFound();
 
   public:

@@ -30,7 +30,9 @@ ESP8266WebServer PREi::getServer() {
 DNSServer PREi::getDNS() {
   return _dns_server;
 }
+
 void PREi::init() {
+  initPins();
   Serial.begin(115200);
   WiFi.setAutoConnect(true);
   ESPhttpUpdate.rebootOnUpdate(false);
@@ -56,6 +58,14 @@ void PREi::init() {
   _web_server.on("/wifi", HTTP_GET, std::bind(&PREi::handleScan, this));
   _web_server.on("/wifi", HTTP_POST, std::bind(&PREi::handleConnect, this));
   _web_server.on("/wifi", HTTP_DELETE, std::bind(&PREi::handleDisconnect, this));
+
+  for(int i=0; i<10; ++i) {
+    pinMode(pins[i].pin, INPUT);
+    _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_GET, std::bind(&PREi::handlePinInfo, this));
+    _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_POST, std::bind(&PREi::handlePinOn, this));
+    _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_PUT, std::bind(&PREi::handlePinChange, this));
+    _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_DELETE, std::bind(&PREi::handlePinOff, this));
+  }
 
   _web_server.onNotFound(std::bind(&PREi::handleNotFound, this));
 
@@ -153,6 +163,70 @@ void PREi::handleConnect() {
 void PREi::handleDisconnect() {
   PREi::sendJSON(200, "Disconnected succesfully!");
   WiFi.disconnect();
+}
+
+void PREi::handlePinInfo() {
+  uint8_t pin = getPinFromUri(_web_server.uri());
+
+  _web_server.send(200, "application/json", generatePinJSON(pins[pin]));
+}
+
+void PREi::handlePinOn() {
+  uint8_t pin = getPinFromUri(_web_server.uri());
+  String val;
+
+  if(!pins[pin].digital || pins[pin].mode == "input") {
+    PREi::sendJSON(405, "Pin mode only supports GET requests.");
+  } else if(pins[pin].mode == "output") {
+    digitalWrite(pins[pin].pin, HIGH);
+    PREi::sendJSON(200, "Pin voltage set to HIGH.");
+  } else if((val = _web_server.arg("val")) != "") {
+    analogWrite(pins[pin].pin, atoi(val.c_str()));
+    PREi::sendJSON(200, "Pin voltage set to " + val + ".");
+    pins[pin].pwm_val = atoi(val.c_str());
+  } else {
+    analogWrite(pins[pin].pin, 255);
+    PREi::sendJSON(200, "Pin voltage set to 255.");
+    pins[pin].pwm_val = 255;
+  }
+}
+
+void PREi::handlePinChange() {
+  uint8_t pin = getPinFromUri(_web_server.uri());
+
+  if(pins[pin].digital) {
+    String mode = _web_server.arg("mode");
+
+    if(mode == "input") {
+        pinMode(pins[pin].pin, INPUT);
+    } else if(mode == "output") {
+        pinMode(pins[pin].pin, OUTPUT);
+    } else if(mode == "pwm") {
+        pinMode(pins[pin].pin, OUTPUT);
+    } else {
+        PREi::sendJSON(400, "Invalid pin mode received.");
+        return;
+    };
+    pins[pin].mode = mode;
+    PREi::sendJSON(200, "Pin mode succesfully set to " + mode + ".");
+  } else {
+    PREi::sendJSON(405, "Pin mode only supports GET requests.");
+  }
+}
+
+void PREi::handlePinOff() {
+  uint8_t pin = getPinFromUri(_web_server.uri());
+
+  if(!pins[pin].digital || pins[pin].mode == "input") {
+    PREi::sendJSON(405, "Pin mode only supports GET requests.");
+  } else if(pins[pin].mode == "output") {
+    digitalWrite(pins[pin].pin, LOW);
+    PREi::sendJSON(200, "Pin voltage set to LOW.");
+  } else {
+    analogWrite(pins[pin].pin, 0);
+    pins[pin].pwm_val = 0;
+    PREi::sendJSON(200, "Pin voltage set to 0.");
+  }
 }
 
 void PREi::handleNotFound() {
@@ -293,4 +367,46 @@ String PREi::generateScanJSON() {
   }
 
   return JSON + "]}";
+}
+
+uint8_t PREi::getPinFromUri(String uri) {
+  uri.replace("/pin/", "");
+  for(int i=0; i<10; ++i) {
+    if(pins[i].name == uri) {
+      return i;
+    }
+  }
+}
+
+String PREi::generatePinJSON(PREiPin pin) {
+  String JSON = "";
+  JSON += "{\"data\":";
+  JSON += "{\
+    \"name\": \"{nm}\",\
+    \"pin\": {pn},\
+    \"digital\": {dg},\
+    \"mode\": \"{md}\",\
+    \"value\": {vl}\
+  }";
+
+  JSON.replace("{nm}", pin.name);
+  JSON.replace("{pn}", String(pin.pin));
+  JSON.replace("{dg}", pin.digital ? "true" : "false");
+  JSON.replace("{md}", pin.mode);
+  JSON.replace("{vl}", String(pin.digital ? (pin.mode == "pwm" ? pin.pwm_val : digitalRead(pin.pin)) : analogRead(pin.pin)));
+
+  return JSON + "}";
+}
+
+void PREi::initPins() {
+  pins[0] = (PREiPin){"D0", D0, true, "input", 0};
+  pins[1] = (PREiPin){"D1", D1, true, "input", 0};
+  pins[2] = (PREiPin){"D2", D2, true, "input", 0};
+  pins[3] = (PREiPin){"D3", D3, true, "input", 0};
+  pins[4] = (PREiPin){"D4", D4, true, "input", 0};
+  pins[5] = (PREiPin){"D5", D5, true, "input", 0};
+  pins[6] = (PREiPin){"D6", D6, true, "input", 0};
+  pins[7] = (PREiPin){"D7", D7, true, "input", 0};
+  pins[8] = (PREiPin){"D8", D8, true, "input", 0};
+  pins[9] = (PREiPin){"A0", A0, false, "input", 0};
 }
