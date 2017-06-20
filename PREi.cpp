@@ -23,6 +23,13 @@ void PREi::run() {
   yield();
 }
 
+ESP8266WebServer PREi::getServer() {
+  return _web_server;
+}
+
+DNSServer PREi::getDNS() {
+  return _dns_server;
+}
 void PREi::init() {
   Serial.begin(115200);
   WiFi.setAutoConnect(true);

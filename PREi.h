@@ -45,6 +45,8 @@ class PREi
     PREi(String hostname);
     PREi(String hostname, String password);
     void run();
+    ESP8266WebServer getServer();
+    DNSServer getDNS();
 };
 
 #endif
