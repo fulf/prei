@@ -33,7 +33,6 @@ DNSServer PREi::getDNS() {
 
 void PREi::init() {
   initPins();
-  Serial.begin(115200);
   WiFi.setAutoConnect(true);
   ESPhttpUpdate.rebootOnUpdate(false);
 
@@ -60,11 +59,13 @@ void PREi::init() {
   _web_server.on("/wifi", HTTP_DELETE, std::bind(&PREi::handleDisconnect, this));
 
   for(int i=0; i<10; ++i) {
+    digitalWrite(pins[i].pin, HIGH);
     pinMode(pins[i].pin, INPUT);
     _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_GET, std::bind(&PREi::handlePinInfo, this));
     _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_POST, std::bind(&PREi::handlePinOn, this));
     _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_PUT, std::bind(&PREi::handlePinChange, this));
     _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_DELETE, std::bind(&PREi::handlePinOff, this));
+    _web_server.on(("/pin/" + pins[i].name).c_str(), HTTP_OPTIONS, std::bind(&PREi::handlePreflight, this));
   }
 
   _web_server.onNotFound(std::bind(&PREi::handleNotFound, this));
@@ -168,6 +169,7 @@ void PREi::handleDisconnect() {
 void PREi::handlePinInfo() {
   uint8_t pin = getPinFromUri(_web_server.uri());
 
+  _web_server.sendHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   _web_server.send(200, "application/json", generatePinJSON(pins[pin]));
 }
 
@@ -175,6 +177,8 @@ void PREi::handlePinOn() {
   uint8_t pin = getPinFromUri(_web_server.uri());
   String val;
 
+  _web_server.sendHeader("Access-Control-Allow-Origin", "*");
+  _web_server.sendHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   if(!pins[pin].digital || pins[pin].mode == "input") {
     PREi::sendJSON(405, "Pin mode only supports GET requests.");
   } else if(pins[pin].mode == "output") {
@@ -194,6 +198,7 @@ void PREi::handlePinOn() {
 void PREi::handlePinChange() {
   uint8_t pin = getPinFromUri(_web_server.uri());
 
+  _web_server.sendHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   if(pins[pin].digital) {
     String mode = _web_server.arg("mode");
 
@@ -217,6 +222,8 @@ void PREi::handlePinChange() {
 void PREi::handlePinOff() {
   uint8_t pin = getPinFromUri(_web_server.uri());
 
+  _web_server.sendHeader("Access-Control-Allow-Origin", "*");
+  _web_server.sendHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   if(!pins[pin].digital || pins[pin].mode == "input") {
     PREi::sendJSON(405, "Pin mode only supports GET requests.");
   } else if(pins[pin].mode == "output") {
@@ -254,6 +261,12 @@ void PREi::handleNotFound() {
 
   _web_server.streamFile(f, contentType);
   SPIFFS.end();
+}
+
+void PREi::handlePreflight() {
+  _web_server.sendHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+
+  PREi::sendJSON(200, "Preflight headers sent.");
 }
 
 bool PREi::redirectToHost(bool permanent) {

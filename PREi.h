@@ -56,7 +56,8 @@ class PREi
       handlePinChange(),
       handlePinOff(),
       // Other routes handler
-      handleNotFound();
+      handleNotFound(),
+      handlePreflight();
 
   public:
     PREi();
