@@ -59,6 +59,8 @@ Note that the SSID also dictates the mDNS hostname for the device.
 ### Configuration portal
 Once connected to the ESP's wireless network, the configuration portal will pop up as a hotspot login page. It can also be accessed from the root page of the ESP.
 
+For the configuration portal, the ESP is simply trying to access the `index.html` file on its SPIFFS. For simple usage it is recommended you use the [PREi Config Portal](https://github.com/fulf/prei-portal).
+
 The portal allows for a simple way to connect the ESP to a local wireless network, displaying scanned WiFis sorted by strength. It also shows some other useful information about the module.
 
 <center>
