@@ -39,7 +39,7 @@ class PREi
     bool redirectToHost(bool permanent);
     void init(),
       initPins(),
-      sendJSON(int code, String message, bool raw),
+      sendJSON(int code, String message, bool raw=false),
       // PREi config portal
       handlePortal(),
       // Route /esp GET/POST/DELETE

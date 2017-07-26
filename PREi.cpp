@@ -73,7 +73,7 @@ void PREi::init() {
   _web_server.begin();
 }
 
-void PREi::sendJSON(int code, String message, bool raw=false) {
+void PREi::sendJSON(int code, String message, bool raw) {
   String success = (code/100) == 2 ? "true" : "false";
   _web_server.send(code, "application/json", raw ? message : "{\"success\":" + success+ ",\"message\":\"" + message+ "\"}");
 }
