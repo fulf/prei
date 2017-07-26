@@ -63,7 +63,13 @@ class PREi
     PREi();
     PREi(String hostname);
     PREi(String hostname, String password);
-    void run();
+    void run(),
+      addSensor(String name, int *val),
+      addSensor(String name, float *val),
+      addSensor(String name, String *val),
+      addSensor(String name, int (*cb)()),
+      addSensor(String name, float (*cb)()),
+      addSensor(String name, String (*cb)());
     ESP8266WebServer getServer();
     DNSServer getDNS();
 };

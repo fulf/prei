@@ -23,6 +23,42 @@ void PREi::run() {
   yield();
 }
 
+void PREi::addSensor(String name, int *val) {
+  _web_server.on(("/sensor/" + name).c_str(), HTTP_GET, [=](){
+    PREi::sendJSON(200, String(*val));
+  });
+}
+
+void PREi::addSensor(String name, float *val) {
+  _web_server.on(("/sensor/" + name).c_str(), HTTP_GET, [=](){
+    PREi::sendJSON(200, String(*val));
+  });
+}
+
+void PREi::addSensor(String name, String *val) {
+  _web_server.on(("/sensor/" + name).c_str(), HTTP_GET, [=](){
+    PREi::sendJSON(200, String(*val));
+  });
+}
+
+void PREi::addSensor(String name, int (*cb)()) {
+  _web_server.on(("/sensor/" + name).c_str(), HTTP_GET, [=](){
+    PREi::sendJSON(200, String(cb()));
+  });
+}
+
+void PREi::addSensor(String name, float (*cb)()) {
+  _web_server.on(("/sensor/" + name).c_str(), HTTP_GET, [=](){
+    PREi::sendJSON(200, String(cb()));
+  });
+}
+
+void PREi::addSensor(String name, String (*cb)()) {
+  _web_server.on(("/sensor/" + name).c_str(), HTTP_GET, [=](){
+    PREi::sendJSON(200, String(cb()));
+  });
+}
+
 ESP8266WebServer PREi::getServer() {
   return _web_server;
 }

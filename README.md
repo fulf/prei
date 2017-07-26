@@ -9,6 +9,7 @@ Offers an easy to set up REST server to control the ESP8266 module. Includes a D
 - [Usage](#usage)
   - [Configuration portal](#configuration-portal)
   - [Pin control](#pin-control)
+  - [Sensors](#sensors)
   - [Hardware control](#hardware-control)
     - [ESP module](#esp-module)
     - [Wireless](#wireless)
@@ -89,6 +90,40 @@ A **PUT** request with the `mode` parameter set to any of `output`, `input` or `
 A **POST** request will put the pin in a _HIGH_ power state (3,3V). The request can also contain the `val` parameter set to any value from 0 to 1023 to change that pin's PWM value, if the pin is in the PWM mode.
 
 A **DELETE** request will put the pin in a _LOW_ power state (0V).
+
+### Sensors
+Most digital sensors function at a much higher speed than HTTP can provide, so sending data packets via POST/DELETE sequences is out of discussion. For such cases, PREi uses callback functions or pointers to return the necesarry information or to control complex peripherals.
+
+Using the `addSensor` method, by specifing a sensor name and a callback function or a pointer, you can implement complex behaviour that can be triggered by making a GET request to `/sensor/{sensorName}`. The JSON's "message" value will be the value returned by the callback function, or the value from the pointed address.
+
+An example for getting the temperature and humidity using an DHT22 and [Adafruit's DHT sensor library](https://github.com/adafruit/DHT-sensor-library).
+
+```cpp
+#include <PREi.h>
+#include <DHT.h>
+
+PREi *r;
+DHT dht(2, DHT22);
+
+float getTemperature() {
+  return dht.readTemperature();
+}
+
+float getHumidity() {
+  return dht.readHumidity();
+}
+
+void setup() {
+  dht.begin();
+  r = new PREi("ESP8266", "abcdef12");
+  r->addSensor("temperature", getTemperature); // accessed at /sensor/temperature
+  r->addSensor("humidty", getHumidity); // accessed at /sensor/humidity
+}
+
+void loop() {
+  r->run();
+}
+```
 
 ### Hardware control
 The PREi interface also exposes some minimal hardware control to the pseudo-REST API.

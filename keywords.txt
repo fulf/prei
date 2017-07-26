@@ -6,10 +6,13 @@
 # Datatypes (KEYWORD1)
 ##############################################
 
-PREi	KEYWORD1
+PREi		KEYWORD1
 
 ##############################################
 # Methods and Functions (KEYWORD2)
 ##############################################
 
-run KEYWORD2
+run 		KEYWORD2
+addSensor 	KEYWORD2
+getServer 	KEYWORD2
+getDNS 		KEYWORD2
