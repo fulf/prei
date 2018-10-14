@@ -59,12 +59,12 @@ void PREi::addSensor(String name, String (*cb)()) {
   });
 }
 
-ESP8266WebServer PREi::getServer() {
-  return _web_server;
+ESP8266WebServer* PREi::getServer() {
+  return &_web_server;
 }
 
-DNSServer PREi::getDNS() {
-  return _dns_server;
+DNSServer* PREi::getDNS() {
+  return &_dns_server;
 }
 
 void PREi::init() {

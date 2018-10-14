@@ -70,8 +70,8 @@ class PREi
       addSensor(String name, int (*cb)()),
       addSensor(String name, float (*cb)()),
       addSensor(String name, String (*cb)());
-    ESP8266WebServer getServer();
-    DNSServer getDNS();
+    ESP8266WebServer* getServer();
+    DNSServer* getDNS();
 };
 
 #endif
