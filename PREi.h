@@ -10,7 +10,7 @@
 #include <FS.h>
 #include <PREiNTP.h>
 
-#define VERSION "1.0.0"
+#define VERSION "1.1.1"
 
 struct PREiPin {
     String name;
