@@ -3,7 +3,7 @@
 PREi *r;
 
 void setup() {
-  r = new PREi();
+  r = new PREi("ESP8266", "abcdef12");
 }
 
 void loop() {
