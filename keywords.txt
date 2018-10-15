@@ -16,3 +16,4 @@ run 		KEYWORD2
 addSensor 	KEYWORD2
 getServer 	KEYWORD2
 getDNS 		KEYWORD2
+getServer KEYWORD2
