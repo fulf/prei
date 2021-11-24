@@ -133,7 +133,8 @@ void PREi::handleInfo() {
 }
 
 void PREi::handleUpdate() {
-  HTTPUpdateResult ret = ESPhttpUpdate.update(_web_server.arg("firmware"), VERSION);
+  WiFiClient client;
+  HTTPUpdateResult ret = ESPhttpUpdate.update(client, _web_server.arg("firmware"), VERSION);
   switch(ret) {
       case HTTP_UPDATE_FAILED:
           PREi::sendJSON(500, "Update failed.");
